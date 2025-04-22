@@ -2,186 +2,160 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lucknow Weather</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-color: #1e3c72;
-      --text-color: white;
-      --card-bg: rgba(255, 255, 255, 0.1);
-    }
-    
-    .light-theme {
-      --bg-color: #f0f0f0;
-      --text-color: #1e3c72;
-      --card-bg: rgba(255, 255, 255, 0.9);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg-color);
-      font-family: 'Segoe UI', sans-serif;
-      color: var(--text-color);
+      height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #1e3c72, #2a5298);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      transition: background 0.5s, color 0.5s;
-    }
-
-    .toggle-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      background: var(--card-bg);
-      border: none;
-      color: var(--text-color);
+      color: white;
+      overflow: hidden;
     }
 
     .card {
-      background: var(--card-bg);
-      padding: 30px 50px;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px 60px;
+      border-radius: 25px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
       text-align: center;
-      animation: fadeIn 1s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    .live-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('https://i.ibb.co/ThZ8jYJ/clouds.png');
-      background-repeat: repeat-x;
-      animation: moveClouds 60s linear infinite;
-      opacity: 0.1;
-      z-index: -1;
-    }
-
-    @keyframes moveClouds {
-      from { background-position: 0 0; }
-      to { background-position: -10000px 0; }
+      animation: zoomIn 1s ease;
     }
 
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     #temperature {
-      font-size: 3.5rem;
-      font-weight: bold;
+      font-size: 4.2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fffa;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+      animation: glow 2s ease-in-out infinite alternate;
     }
 
     #time {
       font-size: 1.2rem;
-      margin-top: 15px;
+      color: #ddd;
+      margin-bottom: 10px;
     }
 
     #refresh-note {
-      font-size: 0.8rem;
-      margin-top: 5px;
-      color: #bbb;
+      font-size: 0.9rem;
+      color: #ccc;
     }
 
-    canvas {
-      max-width: 90vw;
-      margin-top: 20px;
+    .loader {
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top: 5px solid #00ffff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #00e6ff;
+      }
+      to {
+        text-shadow: 0 0 20px #fff, 0 0 30px #00ffff;
+      }
+    }
+
+    #weather-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
   </style>
 </head>
 <body>
-  <div class="live-bg"></div>
-  <button class="toggle-btn" onclick="toggleTheme()">Toggle Theme</button>
   <div class="card">
+    <div id="weather-icon">☀️</div>
     <h1>Lucknow Temperature</h1>
-    <div id="temperature">--</div>
+    <div class="loader" id="loader"></div>
+    <div id="temperature" style="display: none;"></div>
     <div id="time"></div>
     <div id="refresh-note">Updates every 5 mins ⏱️</div>
-    <canvas id="tempChart"></canvas>
   </div>
 
   <script>
-    const tempDisplay = document.getElementById("temperature");
-    const ctx = document.getElementById('tempChart').getContext('2d');
-    let chart;
-
     async function fetchTemperature() {
-      const url = "https://api.open-meteo.com/v1/forecast?latitude=26.8467&longitude=80.9462&hourly=temperature_2m&current_weather=true&timezone=auto";
+      const url = "https://api.open-meteo.com/v1/forecast?latitude=26.8467&longitude=80.9462&current_weather=true";
 
       try {
         const response = await fetch(url);
         const data = await response.json();
-
         const temp = data.current_weather.temperature;
-        tempDisplay.textContent = `${temp}°C`;
 
-        const hourly = data.hourly;
-        const hours = hourly.time.slice(0, 12).map(t => new Date(t).getHours());
-        const temps = hourly.temperature_2m.slice(0, 12);
+        const tempDiv = document.getElementById("temperature");
+        tempDiv.innerText = `${temp}°C`;
+        tempDiv.style.display = "block";
+        document.getElementById("loader").style.display = "none";
 
-        if (chart) chart.destroy();
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: hours.map(h => h + ':00'),
-            datasets: [{
-              label: 'Hourly Temp (°C)',
-              data: temps,
-              borderColor: '#fff',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderWidth: 2,
-              tension: 0.3,
-            }]
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: false,
-                ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
-              },
-              x: {
-                ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
-              }
-            },
-            plugins: {
-              legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text-color') } }
-            }
-          }
-        });
-      } catch {
-        tempDisplay.textContent = "⚠️ Unable to load";
+        // Change icon based on time
+        const hour = new Date().getHours();
+        const icon = document.getElementById("weather-icon");
+        icon.innerText = (hour >= 6 && hour <= 18) ? '☀️' : '🌙';
+
+      } catch (error) {
+        const tempDiv = document.getElementById("temperature");
+        tempDiv.innerText = "⚠️ Unable to load";
+        tempDiv.style.display = "block";
+        document.getElementById("loader").style.display = "none";
       }
     }
 
     function updateTime() {
       const now = new Date();
-      document.getElementById("time").textContent = now.toLocaleTimeString();
+      document.getElementById("time").innerText = now.toLocaleTimeString();
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle("light-theme");
-      if (chart) chart.update();
-    }
-
+    // Initial Load
     fetchTemperature();
     updateTime();
-    setInterval(fetchTemperature, 5 * 60 * 1000);
-    setInterval(updateTime, 1000);
+
+    // Set intervals
+    setInterval(fetchTemperature, 5 * 60 * 1000); // 5 mins
+    setInterval(updateTime, 1000); // 1 sec
   </script>
 </body>
 </html>
