@@ -3,66 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <title>Lucknow Weather</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #1e3c72, #2a5298);
       background-size: 400% 400%;
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
+      animation: gradientBG 12s ease infinite;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      color: white;
       overflow: hidden;
-      animation: gradientShift 15s ease infinite;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px 50px;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px 60px;
+      border-radius: 25px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
       text-align: center;
-      opacity: 0;
-      transform: scale(0.9);
-      animation: fadeInCard 1.2s ease-out forwards;
+      animation: zoomIn 1s ease;
     }
 
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     #temperature {
-      font-size: 3.5rem;
-      font-weight: bold;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
+      font-size: 4.2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fffa;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+      animation: glow 2s ease-in-out infinite alternate;
     }
 
     #time {
       font-size: 1.2rem;
-      margin-top: 15px;
-      color: #e0e0e0;
-      animation: pulse 2s infinite;
+      color: #ddd;
+      margin-bottom: 10px;
     }
 
     #refresh-note {
-      font-size: 0.8rem;
-      margin-top: 5px;
-      color: #bbb;
+      font-size: 0.9rem;
+      color: #ccc;
     }
 
     .loader {
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #3498db;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top: 5px solid #00ffff;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
       margin: 20px auto;
     }
@@ -72,32 +75,46 @@
       100% { transform: rotate(360deg); }
     }
 
-    @keyframes fadeInCard {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    @keyframes gradientShift {
+    @keyframes gradientBG {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #00e6ff;
+      }
+      to {
+        text-shadow: 0 0 20px #fff, 0 0 30px #00ffff;
+      }
+    }
+
+    #weather-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
   </style>
 </head>
 <body>
   <div class="card">
+    <div id="weather-icon">☀️</div>
     <h1>Lucknow Temperature</h1>
     <div class="loader" id="loader"></div>
     <div id="temperature" style="display: none;"></div>
     <div id="time"></div>
-    <div id="refresh-note">Updates every 5 mins ⏰</div>
+    <div id="refresh-note">Updates every 5 mins ⏱️</div>
   </div>
 
   <script>
@@ -114,16 +131,16 @@
         tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
 
-        // Trigger fade-in
-        setTimeout(() => {
-          tempDiv.style.opacity = 1;
-        }, 100);
+        // Change icon based on time
+        const hour = new Date().getHours();
+        const icon = document.getElementById("weather-icon");
+        icon.innerText = (hour >= 6 && hour <= 18) ? '☀️' : '🌙';
+
       } catch (error) {
         const tempDiv = document.getElementById("temperature");
         tempDiv.innerText = "⚠️ Unable to load";
         tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
-        tempDiv.style.opacity = 1;
       }
     }
 
@@ -142,4 +159,3 @@
   </script>
 </body>
 </html>
-
