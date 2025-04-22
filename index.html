@@ -8,6 +8,7 @@
       margin: 0;
       padding: 0;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
+      background-size: 400% 400%;
       font-family: 'Segoe UI', sans-serif;
       color: white;
       display: flex;
@@ -16,6 +17,7 @@
       justify-content: center;
       height: 100vh;
       overflow: hidden;
+      animation: gradientShift 15s ease infinite;
     }
 
     .card {
@@ -25,6 +27,9 @@
       box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
       backdrop-filter: blur(10px);
       text-align: center;
+      opacity: 0;
+      transform: scale(0.9);
+      animation: fadeInCard 1.2s ease-out forwards;
     }
 
     h1 {
@@ -35,12 +40,15 @@
     #temperature {
       font-size: 3.5rem;
       font-weight: bold;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
     }
 
     #time {
       font-size: 1.2rem;
       margin-top: 15px;
       color: #e0e0e0;
+      animation: pulse 2s infinite;
     }
 
     #refresh-note {
@@ -63,6 +71,24 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    @keyframes fadeInCard {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
   </style>
 </head>
 <body>
@@ -71,7 +97,7 @@
     <div class="loader" id="loader"></div>
     <div id="temperature" style="display: none;"></div>
     <div id="time"></div>
-    <div id="refresh-note">Updates every hour ⏰</div>
+    <div id="refresh-note">Updates every 5 mins ⏰</div>
   </div>
 
   <script>
@@ -83,13 +109,21 @@
         const data = await response.json();
         const temp = data.current_weather.temperature;
 
-        document.getElementById("temperature").innerText = `${temp}°C`;
-        document.getElementById("temperature").style.display = "block";
+        const tempDiv = document.getElementById("temperature");
+        tempDiv.innerText = `${temp}°C`;
+        tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
+
+        // Trigger fade-in
+        setTimeout(() => {
+          tempDiv.style.opacity = 1;
+        }, 100);
       } catch (error) {
-        document.getElementById("temperature").innerText = "⚠️ Unable to load";
-        document.getElementById("temperature").style.display = "block";
+        const tempDiv = document.getElementById("temperature");
+        tempDiv.innerText = "⚠️ Unable to load";
+        tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
+        tempDiv.style.opacity = 1;
       }
     }
 
@@ -103,10 +137,9 @@
     updateTime();
 
     // Set intervals
-    setInterval(fetchTemperature, 5 * 60 * 1000); // hourly refresh
-    setInterval(updateTime, 1000); // clock update every second
+    setInterval(fetchTemperature, 5 * 60 * 1000); // 5 mins
+    setInterval(updateTime, 1000); // 1 sec
   </script>
 </body>
 </html>
-
 
