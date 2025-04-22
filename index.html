@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lucknow Temperature</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="temp">Loading temperature...</div>
+
+  <script>
+    async function fetchTemp() {
+      const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=26.8467&longitude=80.9462&hourly=temperature_2m");
+      const data = await response.json();
+
+      const timeList = data.hourly.time;
+      const tempList = data.hourly.temperature_2m;
+
+      const now = new Date();
+      now.setMinutes(0, 0, 0);
+      const currentHour = now.toISOString().slice(0, 13) + ":00";
+
+      const index = timeList.indexOf(currentHour);
+      const temp = tempList[index];
+
+      document.getElementById("temp").textContent = `Lucknow Temp: ${temp}°C`;
+    }
+
+    fetchTemp();
+    setInterval(fetchTemp, 5 * 60 * 1000);
+  </script>
+</body>
+</html>
