@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Lucknow Weather</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
@@ -51,6 +51,12 @@
 
     #time {
       font-size: 1.2rem;
+      color: #ddd;
+      margin-bottom: 10px;
+    }
+
+    #aqi {
+      font-size: 1.1rem;
       color: #ddd;
       margin-bottom: 10px;
     }
@@ -110,10 +116,11 @@
 <body>
   <div class="card">
     <div id="weather-icon">☀️</div>
-    <h1>Lucknow Temperature</h1>
+    <h1>Lucknow Weather</h1>
     <div class="loader" id="loader"></div>
     <div id="temperature" style="display: none;"></div>
     <div id="time"></div>
+    <div id="aqi">AQI: Loading...</div>
     <div id="refresh-note">Updates every 5 mins ⏱️</div>
   </div>
 
@@ -144,18 +151,27 @@
       }
     }
 
-    function updateTime() {
-      const now = new Date();
-      document.getElementById("time").innerText = now.toLocaleTimeString();
+    async function fetchAQI() {
+      const url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=26.8467&longitude=80.9462&hourly=pm2_5";
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const pm25 = data.hourly.pm2_5[0];
+
+        const aqiValue = calculateAQI(pm25);
+        document.getElementById("aqi").innerText = `AQI: ${aqiValue}`;
+      } catch (error) {
+        document.getElementById("aqi").innerText = "AQI: N/A";
+      }
     }
 
-    // Initial Load
-    fetchTemperature();
-    updateTime();
+    function calculateAQI(pm) {
+      if (pm <= 12) return "Good 🟢";
+      if (pm <= 35.4) return "Moderate 🟡";
+      if (pm <= 55.4) return "Unhealthy for Sensitive 🟠";
+      if (pm <= 150.4) return "Unhealthy 🔴";
+      if (pm <=
+::contentReference[oaicite:0]{index=0}
+ 
 
-    // Set intervals
-    setInterval(fetchTemperature, 5 * 60 * 1000); // 5 mins
-    setInterval(updateTime, 1000); // 1 sec
-  </script>
-</body>
-</html>
