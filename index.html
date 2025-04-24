@@ -178,27 +178,34 @@
       return "Hazardous ⚫";
     }
 
-    async function fetchTraffic() {
+     async function fetchTraffic() {
       const trafficDiv = document.getElementById("traffic");
-      const url = "https://www.mapquestapi.com/traffic/v2/incidents?key=loAb9Xnr1G37YBjoUHCMNk47YJPihTld&boundingBox=26.9167,81.0162,26.7767,80.8762&filters=construction,incidents";
+      const bbox = "26.7767,80.8762,26.9167,81.0162"; // Lucknow bounding box
+
+      const url = `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${OSs8MdHT9bfR1pKKwHq8ErBcuNgZGMFA}&bbox=${bbox}&fields=all&language=en`;
+
       try {
         const response = await fetch(url);
+        if (!response.ok) throw new Error(`(${response.status}) ${await response.text()}`);
+        
         const data = await response.json();
-        const incidents = data.incidents.length;
+        const incidents = data.incidents || [];
 
-        if (incidents === 0) {
+        if (incidents.length === 0) {
           trafficDiv.innerText = "Traffic: Smooth 🚗💨";
           trafficDiv.style.color = "#00ff99";
-        } else if (incidents <= 3) {
+        } else if (incidents.length <= 3) {
           trafficDiv.innerText = "Traffic: Moderate 🚘";
           trafficDiv.style.color = "#ffff00";
         } else {
           trafficDiv.innerText = "Traffic: Heavy 🚦";
           trafficDiv.style.color = "#ff3333";
         }
+
       } catch (error) {
+        console.error("Traffic error:", error.message);
         trafficDiv.innerText = "Traffic: N/A";
-        console.error("Traffic error:", error);
+        trafficDiv.style.color = "#ccc";
       }
     }
 
