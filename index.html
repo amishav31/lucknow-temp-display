@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Lucknow Weather</title>
+  <title>Lucknow Weather & Traffic</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -49,16 +49,17 @@
       animation: glow 2s ease-in-out infinite alternate;
     }
 
-    #time {
-      font-size: 1.2rem;
+    #time,
+    #aqi,
+    #traffic {
+      font-size: 1.1rem;
       color: #ddd;
       margin-bottom: 10px;
     }
 
-    #aqi {
-      font-size: 1.1rem;
-      color: #ddd;
-      margin-bottom: 10px;
+    #traffic {
+      animation: pulse 2s infinite;
+      font-weight: bold;
     }
 
     #refresh-note {
@@ -93,12 +94,14 @@
     }
 
     @keyframes glow {
-      from {
-        text-shadow: 0 0 10px #fff, 0 0 20px #00e6ff;
-      }
-      to {
-        text-shadow: 0 0 20px #fff, 0 0 30px #00ffff;
-      }
+      from { text-shadow: 0 0 10px #fff, 0 0 20px #00e6ff; }
+      to { text-shadow: 0 0 20px #fff, 0 0 30px #00ffff; }
+    }
+
+    @keyframes pulse {
+      0% { color: #00ff99; text-shadow: 0 0 10px #00ff99; }
+      50% { color: #ffff00; text-shadow: 0 0 15px #ffff00; }
+      100% { color: #ff3333; text-shadow: 0 0 20px #ff3333; }
     }
 
     #weather-icon {
@@ -121,13 +124,13 @@
     <div id="temperature" style="display: none;"></div>
     <div id="time"></div>
     <div id="aqi">AQI: Loading...</div>
+    <div id="traffic">Traffic: Loading...</div>
     <div id="refresh-note">Updates every 5 mins ⏱️</div>
   </div>
 
   <script>
     async function fetchTemperature() {
       const url = "https://api.open-meteo.com/v1/forecast?latitude=26.8467&longitude=80.9462&current_weather=true";
-
       try {
         const response = await fetch(url);
         const data = await response.json();
@@ -138,18 +141,14 @@
         tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
 
-        // Change icon based on time
         const hour = new Date().getHours();
         const icon = document.getElementById("weather-icon");
         icon.innerText = (hour >= 6 && hour <= 18) ? '☀️' : '🌙';
 
-        // Set current time
         const now = new Date();
         document.getElementById("time").innerText = `As of: ${now.toLocaleTimeString()}`;
       } catch (error) {
-        const tempDiv = document.getElementById("temperature");
-        tempDiv.innerText = "⚠️ Unable to load";
-        tempDiv.style.display = "block";
+        document.getElementById("temperature").innerText = "⚠️ Unable to load";
         document.getElementById("loader").style.display = "none";
         console.error("Temperature error:", error);
       }
@@ -157,7 +156,6 @@
 
     async function fetchAQI() {
       const url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=26.8467&longitude=80.9462&hourly=pm2_5";
-
       try {
         const response = await fetch(url);
         const data = await response.json();
@@ -180,12 +178,38 @@
       return "Hazardous ⚫";
     }
 
-    // Load initially and every 5 mins
+    async function fetchTraffic() {
+      const trafficDiv = document.getElementById("traffic");
+      const url = "https://www.mapquestapi.com/traffic/v2/incidents?key=OSs8MdHT9bfR1pKKwHq8ErBcuNgZGMFA&boundingBox=26.9167,81.0162,26.7767,80.8762&filters=construction,incidents";
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const incidents = data.incidents.length;
+
+        if (incidents === 0) {
+          trafficDiv.innerText = "Traffic: Smooth 🚗💨";
+          trafficDiv.style.color = "#00ff99";
+        } else if (incidents <= 3) {
+          trafficDiv.innerText = "Traffic: Moderate 🚘";
+          trafficDiv.style.color = "#ffff00";
+        } else {
+          trafficDiv.innerText = "Traffic: Heavy 🚦";
+          trafficDiv.style.color = "#ff3333";
+        }
+      } catch (error) {
+        trafficDiv.innerText = "Traffic: N/A";
+        console.error("Traffic error:", error);
+      }
+    }
+
+    // Initial load + every 5 mins
     fetchTemperature();
     fetchAQI();
+    fetchTraffic();
     setInterval(() => {
       fetchTemperature();
       fetchAQI();
+      fetchTraffic();
     }, 5 * 60 * 1000);
   </script>
 </body>
