@@ -21,78 +21,60 @@
       align-items: center;
       justify-content: center;
       color: white;
-      overflow: hidden;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.1);
       padding: 40px 60px;
       border-radius: 25px;
-      backdrop-filter: blur(15px);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
       text-align: center;
       animation: zoomIn 1s ease;
-      max-width: 400px;
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       margin-bottom: 20px;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
     }
 
     #temperature {
       font-size: 4.2rem;
       font-weight: 700;
-      margin-bottom: 10px;
-      color: #fffa;
+      margin-bottom: 15px;
+      color: #ffffffcc;
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
       animation: glow 2s ease-in-out infinite alternate;
     }
 
-    #time, #aqi, #traffic {
-      font-size: 1.1rem;
+    #time,
+    #aqi,
+    #traffic {
+      font-size: 1.2rem;
       color: #ddd;
       margin-bottom: 10px;
     }
 
     #traffic {
-      animation: pulse 2s infinite;
+      animation: pulse 3s infinite;
       font-weight: bold;
     }
 
     #refresh-note {
       font-size: 0.9rem;
       color: #ccc;
+      margin-top: 10px;
     }
 
     .loader {
-      border: 5px solid rgba(255, 255, 255, 0.2);
-      border-top: 5px solid #00ffff;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top: 4px solid #00ffff;
       border-radius: 50%;
       width: 40px;
       height: 40px;
       animation: spin 1s linear infinite;
       margin: 20px auto;
-    }
-
-    #weather-icon, #aqi-character {
-      font-size: 2.5rem;
-      animation: float 3s ease-in-out infinite;
-      margin-bottom: 10px;
-    }
-
-    #aqi-scale {
-      display: flex;
-      justify-content: center;
-      gap: 5px;
-      margin-bottom: 10px;
-    }
-
-    #aqi-scale div {
-      width: 40px;
-      height: 10px;
-      border-radius: 5px;
     }
 
     @keyframes spin {
@@ -122,6 +104,12 @@
       100% { color: #ff3333; text-shadow: 0 0 20px #ff3333; }
     }
 
+    #weather-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -134,17 +122,8 @@
     <h1>Lucknow Weather</h1>
     <div class="loader" id="loader"></div>
     <div id="temperature" style="display: none;"></div>
-    <div id="time"></div>
-    <div id="aqi-character">😷</div>
+    <div id="time">Loading time...</div>
     <div id="aqi">AQI: Loading...</div>
-    <div id="aqi-scale">
-      <div style="background:#00e400" title="Good"></div>
-      <div style="background:#ffff00" title="Moderate"></div>
-      <div style="background:#ff7e00" title="Unhealthy for Sensitive"></div>
-      <div style="background:#ff0000" title="Unhealthy"></div>
-      <div style="background:#8f3f97" title="Very Unhealthy"></div>
-      <div style="background:#7e0023" title="Hazardous"></div>
-    </div>
     <div id="traffic">Traffic: Loading...</div>
     <div id="refresh-note">Updates every 5 mins ⏱️</div>
   </div>
@@ -156,34 +135,37 @@
         const response = await fetch(url);
         const data = await response.json();
         const temp = data.current_weather.temperature;
+
         const tempDiv = document.getElementById("temperature");
         tempDiv.innerText = `${temp}°C`;
         tempDiv.style.display = "block";
         document.getElementById("loader").style.display = "none";
 
         const hour = new Date().getHours();
-        document.getElementById("weather-icon").innerText = (hour >= 6 && hour <= 18) ? '☀️' : '🌙';
-        document.getElementById("time").innerText = `As of: ${new Date().toLocaleTimeString()}`;
-      } catch (err) {
+        const icon = document.getElementById("weather-icon");
+        icon.innerText = (hour >= 6 && hour <= 18) ? '☀️' : '🌙';
+
+        const now = new Date();
+        document.getElementById("time").innerText = `As of: ${now.toLocaleTimeString()}`;
+      } catch (error) {
         document.getElementById("temperature").innerText = "⚠️ Unable to load";
         document.getElementById("loader").style.display = "none";
-        console.error("Temperature error:", err);
+        console.error("Temperature error:", error);
       }
     }
 
     async function fetchAQI() {
-      const url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=26.8467&longitude=80.9462&hourly=pm2_5,pm10";
+      const url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=26.8467&longitude=80.9462&hourly=pm2_5";
       try {
-        const res = await fetch(url);
-        const data = await res.json();
+        const response = await fetch(url);
+        const data = await response.json();
         const pm25 = data.hourly.pm2_5[0];
-        const pm10 = data.hourly.pm10[0];
-        const aqiText = calculateAQI(pm25);
-        document.getElementById("aqi").innerHTML = `AQI: ${aqiText}<br>PM2.5: ${pm25} µg/m³<br>PM10: ${pm10} µg/m³`;
-        document.getElementById("aqi-character").innerText = getAQIEmoji(pm25);
-      } catch (err) {
+
+        const aqiValue = calculateAQI(pm25);
+        document.getElementById("aqi").innerText = `AQI: ${aqiValue}`;
+      } catch (error) {
         document.getElementById("aqi").innerText = "AQI: N/A";
-        console.error("AQI error:", err);
+        console.error("AQI error:", error);
       }
     }
 
@@ -196,23 +178,16 @@
       return "Hazardous ⚫";
     }
 
-    function getAQIEmoji(pm) {
-      if (pm <= 12) return "😊";
-      if (pm <= 35.4) return "🙂";
-      if (pm <= 55.4) return "😐";
-      if (pm <= 150.4) return "😷";
-      if (pm <= 250.4) return "🤢";
-      return "☠️";
-    }
-
     async function fetchTraffic() {
       const trafficDiv = document.getElementById("traffic");
-      const bbox = "26.7767,80.8762,26.9167,81.0162";
+      const bbox = "26.7767,80.8762,26.9167,81.0162"; // Lucknow bounding box
       const apiKey = "OSs8MdHT9bfR1pKKwHq8ErBcuNgZGMFA";
       const url = `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${apiKey}&bbox=${bbox}`;
 
       try {
         const response = await fetch(url);
+        if (!response.ok) throw new Error(`(${response.status}) ${await response.text()}`);
+
         const data = await response.json();
         const incidents = data.incidents || [];
 
@@ -226,8 +201,8 @@
           trafficDiv.innerText = "Traffic: Heavy 🚦";
           trafficDiv.style.color = "#ff3333";
         }
-      } catch (err) {
-        console.error("Traffic error:", err);
+      } catch (error) {
+        console.error("Traffic error:", error.message);
         trafficDiv.innerText = "Traffic: N/A";
         trafficDiv.style.color = "#ccc";
       }
